@@ -115,3 +115,42 @@ def objf():
     # maximize
     return rho * spobjf() - (1 - rho) * cuobjf()
 
+
+
+
+# VISUALISE INPUT DATA
+
+# Wholesale pricing
+def showwholepricing():
+    import matplotlib.pyplot as plt
+    plt.plot(list(range(1,25)), wholepricedata, "o-")
+    plt.title("Price data on June 22, 2017")
+    plt.xlabel("Time slot")
+    plt.ylabel("Wholesale price (ȼ/kWh)")
+    plt.xlim(0.3,24.7)
+    plt.xticks(list(range(1,25)))
+    plt.yticks(list(range(0,7)))
+    plt.show()
+    return
+
+# show customer energy demand
+def showdemand(no=1):
+    import matplotlib.pyplot as plt
+    p2 = plt.bar(list(range(1,25)), edemandcurtdata[no-1], color="red")
+    p1 = plt.bar(list(range(1,25)), edemandcritdata[no-1], color="blue")
+    plt.title("Customer " + str(no))
+    plt.xlabel("Time slot")
+    plt.ylabel("Energy demand (kWh)")
+    plt.xlim(0.3,24.7)
+    plt.xticks(list(range(1,25)))
+    if no == 1:
+        plt.yticks(list(range(0,35,5)))
+    else:
+        plt.yticks(list(range(0,50,5)))
+    plt.legend((p1[0], p2[0]), ("Critical load", "Curtailable load"))
+    plt.show()
+    return
+
+
+
+
