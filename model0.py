@@ -106,7 +106,7 @@ def econs(t,n):
     return econscrit(t,n) + econscurt(t,n)
 # dissatisfaction cost
 def phi(t,n):
-    return ((alpha[n-1] / 2) * (edemand(t,n) - econs(t,n))**2) + (beta[n-1] * (edemand(t,n) - econs(t,n)))
+    return ((alpha[n-1] / 2) * (edemandcurt(t,n) - econscurt(t,n))**2) + (beta[n-1] * (edemandcurt(t,n) - econscurt(t,n)))
 
 
 # OBJECTIVE FUNCTIONS
