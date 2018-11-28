@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Uses the model parameterized by t
+Uses the t2 model (parameterized by t, and modified demand)
 author: Hakan Hekimgil, Jafar Chaab
 """
 
 import numpy as np
 import modelt2
 
-customer = 2
+customer = 1
 
 # model setup
 ntimeslots = modelt2.ntimeslots
@@ -38,20 +38,27 @@ def futurerewards(t,n,greedy = True):
 
 # initialization
 timeslot = 1
-#i = 1
+iterations = 0
 qmatrix = np.zeros([ntimeslots+1,nactions]) # one extra row
+qprev = 1000*np.ones([ntimeslots+1,nactions]) # one extra row
+delta = 0.01
 #qmatrix = np.full([ntimeslots+1,nactions], -np.inf) # one extra row
 
 
 # Q-Learning loop
-for i in range(100):
+while np.max(np.abs(qmatrix-qprev)) > delta:
+    iterations += 1
+    if iterations % 100 == 0:
+        print("iteration {:,}; delta: {:}...".format(iterations, np.max(np.abs(qmatrix-qprev))))
+    qprev = qmatrix.copy()
     for t in range(1,ntimeslots+1):
         for action in range(nactions):
             qmatrix[t-1,action] = (
                     (1 - alpha ) * qmatrix[t-1,action] + 
                     alpha * (
-                            modelt2.obj(t,customer,actions[action]) + 
+                            reward(t,customer,actions[action]) + 
                             discount * np.max(qmatrix[t,:])))
+print("finished at iteration {:,}, with a delta of {:}...".format(iterations, np.max(np.abs(qmatrix-qprev))))
 #    totalreward = 0
 #    action = np.argmax(qmatrix[t-1,:])
 #    aprice = actions[action]
