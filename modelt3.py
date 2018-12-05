@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Model t2 uses the the state data as parameterized by t.
-Model parameters are changed to allow a solution within a possible range.
+Model t3 modifies the dissatisfaction factor through 3 multipliers. The original
+model from the paper seems to be missing some information and the results do
+not seem to be bound within the indicated price range. With these modifications,
+the weight of the dissatisfaction can be arranged to allow for a solution within
+the allowed range. This way, it is possible to check the working of the machine 
+learning model.
 @author: Hakan Hekimgil, Jafar Chaab
 """
-
-import numpy as np
 
 # this is a dummy function, not used...
 def retailprice(t):
@@ -35,6 +37,10 @@ def wholeprice(t):
     return wholepricedata[t-1]
 
 # CUSTOMER PARAMETERS
+# new parameter: dissatisfaction multiplier
+dmul = [[1.0, 12.0, 1.0],
+        [1.0, 28.0, 1.0],
+        [1.0, 35.0, -3500.0]]
 # customers' dissatisfaction related parameters (Table 2)
 alphan = [0.8, 0.5, 0.3]
 betan = [0.1, 0.1, 0.1]
@@ -77,9 +83,6 @@ edemandcurtdata =[
          6.207123809, 7.027879553, 7.95541338, 9.070470248, 
          10.38082252, 11.3022903, 11.35772223, 11.23394356, 
          10.45031203, 8.927820301, 7.373597276, 6.428734122]]
-edemandcurtdata = np.array(edemandcurtdata)
-# increasing demand by 8 is a modification to the original data
-edemandcurtdata += 8
 def edemandcrit(t,n):
     return edemandcritdata[n-1][t-1]
 def edemandcurt(t,n):
@@ -113,7 +116,8 @@ def econs(t,n,retprice):
     return econscrit(t,n) + econscurt(t,n,retprice)
 # dissatisfaction cost
 def phi(t,n,retprice):
-    return ((alphan[n-1] / 2) * (edemandcurt(t,n) - econscurt(t,n,retprice))**2) + (betan[n-1] * (edemandcurt(t,n) - econscurt(t,n,retprice)))
+    mul0, mul1, mul2 = dmul[n-1]
+    return max(0, mul0 * (((alphan[n-1] / 2) * (mul1 * (edemandcurt(t,n) - econscurt(t,n,retprice)))**2) + mul2 * (betan[n-1] * (edemandcurt(t,n) - econscurt(t,n,retprice)))))
 
 
 # OBJECTIVE FUNCTIONS
