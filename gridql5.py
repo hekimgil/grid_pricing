@@ -8,6 +8,7 @@ author: Hakan Hekimgil, Jafar Chaab
 import numpy as np
 import modelt4
 import time
+from math import log
 
 customer = 1
 initdis = 0
@@ -67,7 +68,7 @@ def reward(state,n,price):
 
 def takeaction(state,n,greedy = True):
 #    if greedy and np.random.random() <= min(epsilon, 10/iterations):
-    if greedy and np.random.random() <= min(epsilon, 1000/iterations):
+    if greedy and np.random.random() <= min(epsilon, 10/log(iterations+1)):
         price = 0
         while price < modelt4.wholeprice(tfs(state)):
             randomaction = np.random.randint(nactions)
@@ -85,13 +86,21 @@ def takeaction(state,n,greedy = True):
 timeslot = 1
 iterations = 0
 qmatrix = np.zeros([nstates,nactions]) # one extra row
-qprev = 1000*np.ones([nstates,nactions]) # one extra row
+qprev = -100*np.ones([nstates,nactions]) # one extra row
 delta = 0.1
 convergence = []
 qconvergence = []
 rewardgraph = []
 initstate = getstate(1,initdis)
 #qmatrix = np.full([ntimeslots+1,nactions], -np.inf) # one extra row
+for i in range(nstates):
+    for j in range(nactions):
+        if tfs(i) <= ntimeslots:
+            if actions[j] < modelt4.wholeprice(tfs(i)):
+                qprev[i,j] = -1000
+                qmatrix[i,j] = -100
+
+
 
 def currentpolicy():
     bpolicy = list()
@@ -122,7 +131,7 @@ start = time.time()
 while np.max(np.abs(qmatrix-qprev)) > delta:
     curstate = initstate
     iterations += 1
-    if iterations % 20 == 0:
+    if iterations % 500 == 0:
         print("iteration {:,}; delta: {:}; reward: {:}...".format(
                 iterations, np.max(np.abs(qmatrix-qprev)), rewardgraph[-1]))
         if rewardgraph[-1] != rewprev:
@@ -130,19 +139,23 @@ while np.max(np.abs(qmatrix-qprev)) > delta:
             print(currentpolicy())
     qprev = qmatrix.copy()
     for t in range(1,ntimeslots+1):
-        for action in range(nactions):
-            # IMPORTANT REMINDER:
-            # The functions use t as it is so reward(t,n,p) refers to time t
-            # Arrays use t with 0-index addressing so qmatrix[t-1:] refers to time t
-            if t == ntimeslots:
-                futureq = 0
-            else:
-                futureq = np.max(qprev[actionablestatesfrom(nextstate(curstate,actions[action])),:])
-            qmatrix[curstate,action] = (
-                    (1 - alpha ) * qprev[curstate,action] + 
-                    alpha * (
-                            reward(curstate,customer,actions[action]) + 
-                            discount * futureq))
+        # IMPORTANT REMINDER:
+        # The functions use t as it is so reward(t,n,p) refers to time t
+        # Arrays use t with 0-index addressing so qmatrix[t-1:] refers to time t
+        bestaction = np.argmax(qprev[curstate,:])
+        while actions[bestaction] < modelt4.wholeprice(tfs(curstate)):
+            qprev[curstate,bestaction] = np.min(qprev) - 10
+            qmatrix[curstate,bestaction] = np.min(qmatrix) - 10
+            bestaction = np.argmax(qprev[curstate,:])
+        if t == ntimeslots:
+            futureq = 0
+        else:
+            futureq = np.max(qprev[actionablestatesfrom(nextstate(curstate,actions[bestaction])),:])
+        qmatrix[curstate,bestaction] = (
+                (1 - alpha ) * qprev[curstate,bestaction] + 
+                alpha * (
+                        reward(curstate,customer,actions[bestaction]) + 
+                        discount * futureq))
         actiontotake = takeaction(curstate, customer, greedy=greedystat)
         curstate = nextstate(curstate, actions[actiontotake])
     convergence.append(np.max(np.abs(qmatrix-qprev)))
