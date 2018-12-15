@@ -144,8 +144,8 @@ while np.max(np.abs(qmatrix-qprev)) > delta:
         # Arrays use t with 0-index addressing so qmatrix[t-1:] refers to time t
         bestaction = np.argmax(qprev[curstate,:])
         while actions[bestaction] < modelt4.wholeprice(tfs(curstate)):
-            qprev[curstate,bestaction] = np.min(qprev) - 10
-            qmatrix[curstate,bestaction] = np.min(qmatrix) - 10
+            qprev[curstate,bestaction] = np.min(qprev) - 100
+            qmatrix[curstate,bestaction] = np.min(qmatrix) - 100
             bestaction = np.argmax(qprev[curstate,:])
         if t == ntimeslots:
             futureq = 0
