@@ -43,7 +43,22 @@ qprev = 1000*np.ones([ntimeslots+1,nactions]) # one extra row
 delta = 0.01
 convergence = []
 qconvergence = []
+rewardgraph = []
 #qmatrix = np.full([ntimeslots+1,nactions], -np.inf) # one extra row
+
+def currentpolicy():
+    bpolicy = list()
+    for t in range(1,25):
+        action = np.argmax(qmatrix[t-1,:])
+        price = actions[action]
+        bpolicy.append(price)
+    return bpolicy
+
+def policyreward(policy, n=customer):
+    totalrewards = 0
+    for t in range(1,25):
+        totalrewards += reward(t, n, policy[t-1])
+    return totalrewards
 
 
 # Q-Learning loop
@@ -64,6 +79,7 @@ while np.max(np.abs(qmatrix-qprev)) > delta:
                             discount * np.max(qprev[t,:])))
     convergence.append(np.max(np.abs(qmatrix-qprev)))
     qconvergence.append(np.mean(np.abs(qmatrix)))
+    rewardgraph.append(policyreward(currentpolicy()))
 print("finished at iteration {:,}, with a delta of {:}...".format(iterations, np.max(np.abs(qmatrix-qprev))))
 #    totalreward = 0
 #    action = np.argmax(qmatrix[t-1,:])
@@ -109,8 +125,10 @@ def plotresults():
 def plotconvergence():
     import matplotlib.pyplot as plt
     plt.plot(convergence)
+    plt.title("Absolute change of Q-values")
     plt.show()
     plt.plot(qconvergence)
+    plt.title("Sum of Q-values")
     plt.show()
     return
 

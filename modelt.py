@@ -21,7 +21,7 @@ ntimeslots = 24
 k1 = 1.5
 k2 = 1.5
 # weighting factor (p.225 last paragraph)
-rho = 0.48
+rho = 0.485
 # wholesale price from grid operator
 wholepricedata =[
         1.90, 1.80, 1.70, 1.60, 1.60, 1.90,
@@ -102,7 +102,9 @@ def elasticity(t):
 def econscrit(t,n):
     return edemandcrit(t,n)
 def econscurt(t,n,retprice):
-    return edemandcurt(t,n) * (1 + elasticity(t) * ((retprice - wholeprice(t)) / wholeprice(t)))
+    return min(
+            max(0, edemandcurt(t,n) * (1 + elasticity(t) * ((retprice - wholeprice(t)) / wholeprice(t)))),
+            edemandcurt(t,n))
 def econs(t,n,retprice):
     return econscrit(t,n) + econscurt(t,n,retprice)
 # dissatisfaction cost

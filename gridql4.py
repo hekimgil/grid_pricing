@@ -212,10 +212,13 @@ def plotresults():
 def plotconvergence():
     import matplotlib.pyplot as plt
     plt.plot(convergence)
+    plt.title("Absolute change of Q-values")
     plt.show()
     plt.plot(qconvergence)
+    plt.title("Sum of Q-values")
     plt.show()
     plt.plot(rewardgraph)
+    plt.title("Convergence total reward for best policy")
     plt.show()
     return
 
